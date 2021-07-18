@@ -5,7 +5,7 @@ import ChatIcon from '@material-ui/icons/Chat'
 import SearchIcon from '@material-ui/icons/Search'
 import { IconButton } from '@material-ui/core'
 
-const SideBar = () => {
+const Sidebar = () => {
   return (
     <Container>
       <Header>
@@ -34,7 +34,7 @@ const SideBar = () => {
   )
 }
 
-export default SideBar
+export default Sidebar
 
 const Container = styled.div``
 
