@@ -5,22 +5,53 @@ import ChatIcon from '@material-ui/icons/Chat'
 import SearchIcon from '@material-ui/icons/Search'
 import { IconButton } from '@material-ui/core'
 import * as EmailValidator from 'email-validator'
+import { auth, db } from '../firebase'
+import { useAuthState } from 'react-firebase-hooks/auth'
+import { useCollection } from 'react-firebase-hooks/firestore'
+import Chat from './Chat'
 
 const Sidebar = () => {
+  const [user] = useAuthState(auth)
+  const userChatRef = db
+    .collection('chats')
+    .where('users', 'array-contains', user.email)
+  const chatsSnapshot = useCollection(userChatRef)
+  /*   console.log(userChatRef) */
+  /*   console.log(chatsSnapshot) */
+
   const createChat = () => {
     const input = prompt(
       'Please enter email address for the user you want to chat with.'
     )
 
     if (!input) return null
-    if (EmailValidator.validate(input)) {
+    if (
+      EmailValidator.validate(input) &&
+      !chatAlreadyExists(input) &&
+      input !== user.email
+    ) {
       // We need to add the chat into the DB 'chats' collection
+      db.collection('chats').add({
+        users: [user.email, input],
+      })
     }
   }
+
+  // This is my code after hours of debugging!
+  const chatAlreadyExists = (recipientEmail) =>
+    chatsSnapshot?.[0].docs.find((chat) => {
+      return chat.data().users.includes(recipientEmail)
+    })?.exists
+
+  // I don't really get this code 100%
+  /* chatsSnapshot?.[0].docs.find((chat) =>
+        chat.data().users.find((user) => user === recipientEmail?.length > 0)
+      ) */
+
   return (
     <Container>
       <Header>
-        <UserAvatar />
+        <UserAvatar onClick={() => auth.signOut()} />
 
         <IconsContainer>
           <IconButton>
@@ -41,6 +72,10 @@ const Sidebar = () => {
       <SidebarButton onClick={createChat}> Start a New Chat</SidebarButton>
 
       {/* List of Chats */}
+      {chatsSnapshot?.[0] &&
+        chatsSnapshot?.[0].docs.map((chat) => (
+          <Chat key={chat.id} id={chat.id} users={chat.data().users} />
+        ))}
     </Container>
   )
 }
