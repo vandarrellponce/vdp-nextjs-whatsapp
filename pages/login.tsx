@@ -14,7 +14,10 @@ const login: React.FC<{}> = () => {
       </Head>
 
       <LoginContainer>
-        <Logo src="https://1000logos.net/wp-content/uploads/2021/04/WhatsApp-logo.png" />
+        <Logo
+          src="https://1000logos.net/wp-content/uploads/2021/04/WhatsApp-logo.png"
+          alt="logo"
+        />
         <Button onClick={signIn} variant="outlined">
           Sign in with Google
         </Button>
