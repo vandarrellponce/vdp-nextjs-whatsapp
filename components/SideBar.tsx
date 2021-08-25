@@ -9,6 +9,7 @@ import { auth, db } from '../firebase'
 import { useAuthState } from 'react-firebase-hooks/auth'
 import { useCollection } from 'react-firebase-hooks/firestore'
 import Chat from './Chat'
+import getRecipientEmail from '../utils/getRecipientEmail'
 
 const Sidebar = () => {
   const [user] = useAuthState(auth)
@@ -51,7 +52,7 @@ const Sidebar = () => {
   return (
     <Container>
       <Header>
-        <UserAvatar onClick={() => auth.signOut()} />
+        <UserAvatar src={user.photoURL} onClick={() => auth.signOut()} />
 
         <IconsContainer>
           <IconButton>
@@ -74,7 +75,11 @@ const Sidebar = () => {
       {/* List of Chats */}
       {chatsSnapshot?.[0] &&
         chatsSnapshot?.[0].docs.map((chat) => (
-          <Chat key={chat.id} id={chat.id} users={chat.data().users} />
+          <Chat
+            key={chat.id}
+            id={chat.id}
+            recipientEmail={getRecipientEmail(chat.data().users, user.email)}
+          />
         ))}
     </Container>
   )
