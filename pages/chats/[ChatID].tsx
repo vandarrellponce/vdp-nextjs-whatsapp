@@ -29,7 +29,7 @@ const ChatRoom = ({ chat, messages }) => {
 export default ChatRoom
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const chatID = context.params.ChatID
+  const chatID = context.query.id
   const ref = db.collection('chats').doc(chatID as string)
 
   // PREP THE MESSAGES IN THE SERVER
