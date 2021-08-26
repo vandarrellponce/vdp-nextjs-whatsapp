@@ -7,6 +7,7 @@ import { auth, db } from '../firebase'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import AttachFileIcon from '@material-ui/icons/AttachFile'
 import getRecipientEmail from '../utils/getRecipientEmail'
+import Message from './Message'
 
 const ChatScreen: React.FC<{
   chat: any
