@@ -1,44 +1,59 @@
+import moment from 'moment'
+import { useAuthState } from 'react-firebase-hooks/auth'
 import styled from 'styled-components'
+import { auth } from '../firebase'
 
 const Message: React.FC<{
-  user: any
+  sender: any
   message: any
-}> = ({ user, message }) => {
+}> = ({ sender, message }) => {
+  const [loggedInUser] = useAuthState(auth)
+  const loggedInUserName = loggedInUser.displayName
+  const TypeOfMessage =
+    loggedInUserName === sender ? SenderMessage : RecieverMessage
+
   return (
     <Container>
-      <MessageContainer>
-        <ActualMessage>{message.message}</ActualMessage>
-        <Sender>{message.user}</Sender>
-        {/*   <Time>{message.timestamp}</Time> */}
-      </MessageContainer>
+      <TypeOfMessage>
+        {message.message}
+        <Timestamp>
+          {message.timestamp ? moment(message.timestamp).format('LT') : '...'}
+        </Timestamp>
+      </TypeOfMessage>
     </Container>
   )
 }
 
 export default Message
 
-const Container = styled.div`
-  display: flex;
-`
-const MessageContainer = styled.div`
-  display: flex;
-  flex-direction: column;
+const Container = styled.div``
+const MessageElement = styled.p`
+  width: fit-content;
+  min-width: 60px;
   padding: 10px;
-  border-radius: 6px;
-  background-color: #9ecc9e;
+  padding-bottom: 26px;
+  border-radius: 8px;
   margin: 4px;
+  position: relative;
+  text-align: right;
 `
-const ActualMessage = styled.p`
-  margin: 0;
-  padding: 0;
-`
-const Sender = styled.p`
-  font-size: 10px;
-  margin-bottom: 0;
-  margin-top: 5px;
+const SenderMessage = styled(MessageElement)`
+  margin-left: auto;
+  background-color: #dcf8c6;
 `
 
-const Time = styled.p`
-  font-size: 10px;
-  margin: 0;
+const RecieverMessage = styled(MessageElement)`
+  text-align: left;
+  background-color: whitesmoke;
+`
+
+const Timestamp = styled.span`
+  color: gray;
+  padding: 10px;
+  font-size: 8px;
+  position: absolute;
+  margin-top: 10px;
+  bottom: 0;
+  text-align: right;
+  right: 0;
 `

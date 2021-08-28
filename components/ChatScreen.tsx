@@ -20,7 +20,7 @@ const ChatScreen: React.FC<{
   messages: any
 }> = ({ chat, messages }) => {
   const router = useRouter()
-  const [userInput, setUserInput] = useState<string>()
+  const [userInput, setUserInput] = useState<string>('')
   const [user] = useAuthState(auth)
   const [chatID, setChatID] = useState<any>()
   const recipientEmail = getRecipientEmail(chat.users, user.email)
@@ -43,7 +43,7 @@ const ChatScreen: React.FC<{
       return messagesSnapshot.docs.map((message) => (
         <Message
           key={message.id}
-          user={message.data().user}
+          sender={message.data().user}
           message={{
             ...message.data(),
             timestamp: message.data().timestamp?.toDate().getTime(),
@@ -52,7 +52,7 @@ const ChatScreen: React.FC<{
       ))
     } else {
       return JSON.parse(messages).map((message) => (
-        <Message key={message.id} user={message.user} message={message} />
+        <Message key={message.id} sender={message.user} message={message} />
       ))
     }
   }
