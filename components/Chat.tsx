@@ -3,6 +3,8 @@ import { useRouter } from 'next/dist/client/router'
 import { useCollection } from 'react-firebase-hooks/firestore'
 import styled from 'styled-components'
 import { db } from '../firebase'
+import getRecipientByEmail from '../utils/getRecipientByEmail'
+import getRecipientEmail from '../utils/getRecipientEmail'
 
 const Chat: React.FC<{
   recipientEmail: string
@@ -10,11 +12,7 @@ const Chat: React.FC<{
 }> = ({ recipientEmail, id }) => {
   const router = useRouter()
 
-  const [recipientSnapshot] = useCollection(
-    db.collection('users').where('email', '==', recipientEmail)
-  )
-  const recipient = recipientSnapshot?.docs?.[0]?.data()
-
+  const recipient = getRecipientByEmail(recipientEmail)
   const enterChat = () => {
     router.push(`/chats/${id}`)
   }
@@ -26,7 +24,7 @@ const Chat: React.FC<{
       ) : (
         <UserAvatar> {recipientEmail[0]}</UserAvatar>
       )}
-      <p> {recipientEmail} </p>
+      <p> {recipient?.name ? recipient.name : recipientEmail} </p>
     </Container>
   )
 }

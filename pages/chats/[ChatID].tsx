@@ -8,7 +8,7 @@ import { auth, db } from '../../firebase'
 import getRecipientEmail from '../../utils/getRecipientEmail'
 
 const ChatRoom = ({ chat, messages }) => {
-  /*   console.log(chat, messages) */
+  /* console.log(chat, messages) */
 
   const [user] = useAuthState(auth)
   return (
@@ -29,7 +29,7 @@ const ChatRoom = ({ chat, messages }) => {
 export default ChatRoom
 
 export const getServerSideProps: GetServerSideProps = async (context) => {
-  const chatID = context.query.id
+  const chatID = context.query.ChatID
   const ref = db.collection('chats').doc(chatID as string)
 
   // PREP THE MESSAGES IN THE SERVER

@@ -6,19 +6,34 @@ import styled from 'styled-components'
 import { auth, db } from '../firebase'
 import MoreVertIcon from '@material-ui/icons/MoreVert'
 import AttachFileIcon from '@material-ui/icons/AttachFile'
+import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon'
+import MicIcon from '@material-ui/icons/Mic'
 import getRecipientEmail from '../utils/getRecipientEmail'
 import Message from './Message'
+import { useState, useEffect } from 'react'
+import firebase from 'firebase/app'
+import getRecipientByEmail from '../utils/getRecipientByEmail'
+import TimeAgo from 'timeago-react'
 
 const ChatScreen: React.FC<{
   chat: any
   messages: any
 }> = ({ chat, messages }) => {
-  const [user] = useAuthState(auth)
   const router = useRouter()
+  const [userInput, setUserInput] = useState<string>()
+  const [user] = useAuthState(auth)
+  const [chatID, setChatID] = useState<any>()
+  const recipientEmail = getRecipientEmail(chat.users, user.email)
+  const recipient = getRecipientByEmail(recipientEmail)
+
+  useEffect(() => {
+    setChatID(router.query.ChatID as string)
+  }, [router.query.ChatID])
+
   const [messagesSnapshot] = useCollection(
     db
       .collection('chats')
-      .doc(router.query.id as string)
+      .doc(chatID)
       .collection('messages')
       .orderBy('timestamp', 'asc')
   )
@@ -35,15 +50,53 @@ const ChatScreen: React.FC<{
           }}
         />
       ))
+    } else {
+      return JSON.parse(messages).map((message) => (
+        <Message key={message.id} user={message.user} message={message} />
+      ))
     }
   }
+
+  const sendMessage = (e) => {
+    e.preventDefault()
+    db.collection('users')
+      .doc(user.uid)
+      .set(
+        { lastSeen: firebase.firestore.FieldValue.serverTimestamp() },
+        { merge: true }
+      )
+
+    db.collection('chats')
+      .doc(router.query.ChatID as string)
+      .collection('messages')
+      .add({
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        message: userInput,
+        user: user.displayName,
+        photoURL: user.photoURL,
+      })
+
+    setUserInput('')
+  }
+
   return (
     <Container>
       <HeaderContainer>
-        <UserAvatar />
+        {recipient ? (
+          <Avatar src={recipient?.photoURL} />
+        ) : (
+          <Avatar>{recipientEmail[0]}</Avatar>
+        )}
         <HeaderInformation>
-          <h3>recipient email</h3>
-          <p>Last seen...</p>
+          <h3>{recipient ? recipient.name : recipientEmail}</h3>
+          <p>
+            Last seen:{' '}
+            {recipient ? (
+              <TimeAgo datetime={recipient.lastSeen?.toDate()} />
+            ) : (
+              'Unavailable'
+            )}
+          </p>
         </HeaderInformation>
         <HeaderIcons>
           <IconButton>
@@ -54,14 +107,53 @@ const ChatScreen: React.FC<{
           </IconButton>
         </HeaderIcons>
       </HeaderContainer>
-      <MessageContainer>
+      <MessagesContainer>
+        {showMessages()}
         <EndOfMessage />
-      </MessageContainer>
+      </MessagesContainer>
+      <InputContainer>
+        <InsertEmoticonIcon />
+        <Input
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+        />
+        <button
+          hidden
+          disabled={!userInput}
+          type="submit"
+          onClick={sendMessage}
+        >
+          Send Message
+        </button>
+        <MicIcon />
+      </InputContainer>
     </Container>
   )
 }
 
 export default ChatScreen
+
+const InputContainer = styled.form`
+  display: flex;
+  align-items: center;
+  padding: 10px;
+  position: sticky;
+  bottom: 0;
+  background-color: white;
+  z-index: 100;
+`
+
+const Input = styled.input`
+  flex: 1;
+  outline: 0;
+  border: none;
+  border-radius: 10px;
+  align-items: center;
+  padding: 20px;
+  margin-left: 15px;
+  margin-right: 15px;
+  background-color: whitesmoke;
+`
 
 const Container = styled.div`
   display: flex;
@@ -103,6 +195,10 @@ const HeaderInformation = styled.div`
 
 const HeaderIcons = styled.div``
 
-const MessageContainer = styled.div``
+const MessagesContainer = styled.div`
+  padding: 30px;
+  background-color: #e5ded8;
+  min-height: 90vh;
+`
 
 const EndOfMessage = styled.div``
