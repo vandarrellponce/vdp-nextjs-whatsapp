@@ -10,7 +10,7 @@ import InsertEmoticonIcon from '@material-ui/icons/InsertEmoticon'
 import MicIcon from '@material-ui/icons/Mic'
 import getRecipientEmail from '../utils/getRecipientEmail'
 import Message from './Message'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import firebase from 'firebase/app'
 import getRecipientByEmail from '../utils/getRecipientByEmail'
 import TimeAgo from 'timeago-react'
@@ -25,10 +25,15 @@ const ChatScreen: React.FC<{
   const [chatID, setChatID] = useState<any>()
   const recipientEmail = getRecipientEmail(chat.users, user.email)
   const recipient = getRecipientByEmail(recipientEmail)
+  const endOfMessageRef = useRef(null)
 
   useEffect(() => {
     setChatID(router.query.ChatID as string)
   }, [router.query.ChatID])
+
+  useEffect(() => {
+    scrollToBottom()
+  })
 
   const [messagesSnapshot] = useCollection(
     db
@@ -56,6 +61,12 @@ const ChatScreen: React.FC<{
       ))
     }
   }
+  const scrollToBottom = () => {
+    endOfMessageRef.current.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    })
+  }
 
   const sendMessage = (e) => {
     e.preventDefault()
@@ -77,6 +88,7 @@ const ChatScreen: React.FC<{
       })
 
     setUserInput('')
+    scrollToBottom()
   }
 
   return (
@@ -109,7 +121,7 @@ const ChatScreen: React.FC<{
       </HeaderContainer>
       <MessagesContainer>
         {showMessages()}
-        <EndOfMessage />
+        <EndOfMessage ref={endOfMessageRef} />
       </MessagesContainer>
       <InputContainer>
         <InsertEmoticonIcon />
@@ -201,4 +213,6 @@ const MessagesContainer = styled.div`
   min-height: 90vh;
 `
 
-const EndOfMessage = styled.div``
+const EndOfMessage = styled.div`
+  margin-bottom: 4 0px;
+`
